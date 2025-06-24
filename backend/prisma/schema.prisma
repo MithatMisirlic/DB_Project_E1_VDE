@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  id         Int       @id @default(autoincrement())
+  firstName  String
+  lastName   String
+  street     String
+  houseNumber String
+  zip        String
+  city       String
+  phone      String
+  email      String
+
+  subscriberApplications Application[] @relation("subscriberApps")
+  operatorApplications   Application[] @relation("operatorApps")
+}
+
+model Installer {
+  id                Int    @id @default(autoincrement())
+  place             String
+  registrationNumber String
+  phone             String
+  email             String
+
+  applications Application[]
+}
+
+model Address {
+  id           Int    @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  street       String
+  houseNumber  String
+  zip          String
+  city         String
+  phone        String
+  email        String
+
+  applications Application[]
+}
+
+model Application {
+  id                  Int      @id @default(autoincrement())
+  systemType          String
+  plannedCommission   DateTime
+  sitePlanAttached    Boolean  @default(false)
+  dataSheetAttached   Boolean  @default(false)
+  certificatesAttached Boolean @default(false)
+
+  subscriberId        Int
+  operatorId          Int
+  installerId         Int
+  plantAddressId      Int
+
+  subscriber   Person    @relation("subscriberApps", fields: [subscriberId], references: [id])
+  operator     Person    @relation("operatorApps", fields: [operatorId], references: [id])
+  installer    Installer @relation(fields: [installerId], references: [id])
+  plantAddress Address   @relation(fields: [plantAddressId], references: [id])
+}
