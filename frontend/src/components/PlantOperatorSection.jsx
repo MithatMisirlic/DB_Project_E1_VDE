@@ -1,4 +1,4 @@
-function PlantOperatorSection({ handleChange }) {
+function PlantOperatorSection({ handleChange, sameAsSubscriber, handleSameAsSubscriber }) {
     return (
         <>
             <h2 className="h4 fw-bold mt-5">
@@ -6,6 +6,20 @@ function PlantOperatorSection({ handleChange }) {
                 Plant Operator
             </h2>
             <hr />
+
+            <div className="form-check mb-3">
+                <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="sameAsSubscriber"
+                    checked={sameAsSubscriber}
+                    onChange={handleSameAsSubscriber}
+                />
+                <label className="form-check-label" htmlFor="sameAsSubscriber">
+                    Same as Subscriber
+                </label>
+            </div>
+
             <div className="row g-3">
                 {[
                     { label: 'First Name', name: 'firstName' },

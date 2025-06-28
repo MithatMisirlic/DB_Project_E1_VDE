@@ -1,59 +1,73 @@
 import { useState } from 'react';
 import axios from 'axios';
-import './App.css';
+import '../App.css';
+
+import SubscriberSection from './SubscriberSection';
+import PlantOperatorSection from './PlantOperatorSection';
+import PlantAddressSection from './PlantAddressSection';
+import SystemInstallerSection from './SystemInstallerSection';
+import SystemInfoSection from './SystemInfoSection';
+import AttachmentsSection from './AttachmentsSection';
+import FooterSection from './FooterSection';
+import ApplicationsList from './ApplicationsList';
+
+const EMPTY_FORM = {
+    systemType: '',
+    plannedCommission: '',
+    attachments: {
+        applicationFormEnclosed: false,
+        sitePlanAttached: false,
+        dataSheetAttached: false,
+        unitCertificatesAvailable: false,
+        naProtectionCertificateEnclosed: false,
+        powerFlowMonitoringCert: false,
+        overviewCircuitDiagramAttached: false
+    },
+    subscriber: {
+        firstName: '',
+        lastName: '',
+        street: '',
+        houseNumber: '',
+        zip: '',
+        city: '',
+        phone: '',
+        email: ''
+    },
+    operator: {
+        firstName: '',
+        lastName: '',
+        street: '',
+        houseNumber: '',
+        zip: '',
+        city: '',
+        phone: '',
+        email: ''
+    },
+    plantAddress: {
+        firstName: '',
+        lastName: '',
+        street: '',
+        houseNumber: '',
+        zip: '',
+        city: '',
+        phone: '',
+        email: ''
+    },
+    installer: {
+        company: '',
+        place: '',
+        registrationNumber: ''
+    },
+    place: '',
+    signatureDate: '',
+    signature: '',
+    sameAsSubscriber: false
+};
 
 function ApplicationForm() {
-    const [form, setForm] = useState({
-        systemType: '',
-        plannedCommission: '',
-        attachments: {
-            applicationFormEnclosed: false,
-            sitePlanAttached: false,
-            dataSheetAttached: false,
-            unitCertificatesAvailable: false,
-            naProtectionCertificateEnclosed: false,
-            powerFlowMonitoringCert: false,
-            overviewCircuitDiagramAttached: false
-        },
-        subscriber: {
-            firstName: '',
-            lastName: '',
-            street: '',
-            houseNumber: '',
-            zip: '',
-            city: '',
-            phone: '',
-            email: ''
-        },
-        operator: {
-            firstName: '',
-            lastName: '',
-            street: '',
-            houseNumber: '',
-            zip: '',
-            city: '',
-            phone: '',
-            email: ''
-        },
-        plantAddress: {
-            firstName: '',
-            lastName: '',
-            street: '',
-            houseNumber: '',
-            zip: '',
-            city: '',
-            phone: '',
-            email: ''
-        },
-        installer: {
-            company: '',
-            place: '',
-            registrationNumber: ''
-        },
-        place: '',
-        signatureDate: '',
-        signature: ''
-    });
+    const [form, setForm] = useState(EMPTY_FORM);
+    const [editingId, setEditingId] = useState(null);
+    const [status, setStatus] = useState({ loading: false, success: '', error: '' });
 
     const handleChange = (e, section = null) => {
         const { name, value, type, checked } = e.target;
@@ -85,189 +99,92 @@ function ApplicationForm() {
         }
     };
 
+    const handleSameAsSubscriber = () => {
+        setForm(prev => ({
+            ...prev,
+            sameAsSubscriber: !prev.sameAsSubscriber,
+            operator: !prev.sameAsSubscriber ? { ...prev.subscriber } : {
+                firstName: '',
+                lastName: '',
+                street: '',
+                houseNumber: '',
+                zip: '',
+                city: '',
+                phone: '',
+                email: ''
+            }
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!form.subscriber.firstName || !form.subscriber.lastName) {
+            setStatus({ loading: false, success: '', error: 'Please fill in required Subscriber fields.' });
+            return;
+        }
+
+        setStatus({ loading: true, success: '', error: '' });
+
         try {
-            const response = await axios.post('http://localhost:3001/application', form);
-            alert('Application submitted!');
-            console.log(response.data);
+            if (editingId) {
+                await axios.put(`http://localhost:3001/application/${editingId}`, form);
+                setStatus({ loading: false, success: 'Application updated successfully!', error: '' });
+            } else {
+                await axios.post('http://localhost:3001/application', form);
+                setStatus({ loading: false, success: 'Application submitted successfully!', error: '' });
+            }
+
+            setForm(EMPTY_FORM);
+            setEditingId(null);
         } catch (err) {
-            alert('Submission failed.');
+            setStatus({ loading: false, success: '', error: 'Submission failed. Please try again.' });
             console.error(err);
         }
     };
 
+    const startEditing = (app) => {
+        setForm({
+            systemType: app.systemType || '',
+            plannedCommission: app.plannedCommission ? app.plannedCommission.split('T')[0] : '',
+            attachments: app.attachments || EMPTY_FORM.attachments,
+            subscriber: { ...EMPTY_FORM.subscriber, ...app.subscriber },
+            operator: { ...EMPTY_FORM.operator, ...app.operator },
+            plantAddress: { ...EMPTY_FORM.plantAddress, ...app.plantAddress },
+            installer: { ...EMPTY_FORM.installer, ...app.installer },
+            place: app.place || '',
+            signatureDate: app.signatureDate ? app.signatureDate.split('T')[0] : '',
+            signature: app.signature || '',
+            sameAsSubscriber: false
+        });
+        setEditingId(app.id);
+    };
+
     return (
-        <form className="paper-form" onSubmit={handleSubmit}>
-            {/* Subscriber Section */}
-            <h2 className="mb-3">Subscriber Information</h2>
-            <div className="row g-3">
-                {[
-                    { label: 'First Name', name: 'firstName' },
-                    { label: 'Last Name', name: 'lastName' },
-                    { label: 'Street', name: 'street' },
-                    { label: 'House Number', name: 'houseNumber' },
-                    { label: 'ZIP', name: 'zip' },
-                    { label: 'City', name: 'city' },
-                    { label: 'Phone', name: 'phone' },
-                    { label: 'Email', name: 'email' }
-                ].map((field, idx) => (
-                    <div key={idx} className={`col-md-${field.name === 'street' || field.name === 'city' ? '8' : '4'}`}>
-                        <label className="form-label">{field.label}</label>
-                        <input name={field.name} className="form-control" onChange={(e) => handleChange(e, 'subscriber')} />
-                    </div>
-                ))}
-            </div>
+        <>
+            <form className="paper-form" onSubmit={handleSubmit}>
+                <SubscriberSection handleChange={handleChange} />
+                <PlantOperatorSection handleChange={handleChange} sameAsSubscriber={form.sameAsSubscriber} handleSameAsSubscriber={handleSameAsSubscriber} />
+                <PlantAddressSection handleChange={handleChange} />
+                <SystemInstallerSection handleChange={handleChange} />
+                <SystemInfoSection handleChange={handleChange} />
+                <AttachmentsSection handleChange={handleChange} />
+                <FooterSection handleChange={handleChange} />
 
-            {/* Operator Section */}
-            <h2 className="h4 fw-bold mt-5">
-                <i className="bi bi-person-badge me-2" style={{ color: "#6f42c1" }}></i>
-                Plant Operator
-            </h2>
-            <hr />
+                <button type="submit" className="btn btn-primary mt-3" disabled={status.loading}>
+                    {status.loading
+                        ? (editingId ? 'Saving Changes...' : 'Submitting...')
+                        : (editingId ? 'Submit Changes' : 'Submit Application')}
+                </button>
 
-            <div className="row g-3">
-                {[
-                    { label: 'First Name', name: 'firstName' },
-                    { label: 'Last Name', name: 'lastName' },
-                    { label: 'Street', name: 'street' },
-                    { label: 'House Number', name: 'houseNumber' },
-                    { label: 'ZIP', name: 'zip' },
-                    { label: 'City', name: 'city' },
-                    { label: 'Phone', name: 'phone' },
-                    { label: 'Email', name: 'email' }
-                ].map((field, idx) => (
-                    <div key={idx} className={`col-md-${field.name === 'street' || field.name === 'city' ? '8' : '4'}`}>
-                        <label className="form-label">{field.label}</label>
-                        <input name={field.name} className="form-control" onChange={(e) => handleChange(e, 'operator')} />
-                    </div>
-                ))}
-            </div>
-
-            {/* Plant Address Section */}
-            <h2 className="h4 fw-bold mt-5">
-                <i className="bi bi-geo-alt-fill me-2" style={{ color: "#6f42c1" }}></i>
-                Plant Address
-            </h2>
-            <hr />
-
-            <div className="row g-3">
-                {[
-                    { label: 'First Name', name: 'firstName' },
-                    { label: 'Last Name', name: 'lastName' },
-                    { label: 'Street', name: 'street' },
-                    { label: 'House Number', name: 'houseNumber' },
-                    { label: 'ZIP', name: 'zip' },
-                    { label: 'City', name: 'city' },
-                    { label: 'Phone', name: 'phone' },
-                    { label: 'Email', name: 'email' }
-                ].map((field, idx) => (
-                    <div key={idx} className={`col-md-${field.name === 'street' || field.name === 'city' ? '8' : '4'}`}>
-                        <label className="form-label">{field.label}</label>
-                        <input name={field.name} className="form-control" onChange={(e) => handleChange(e, 'plantAddress')} />
-                    </div>
-                ))}
-            </div>
-
-            {/* System Installer Section */}
-            <h2 className="h4 fw-bold mt-5">
-                <i className="bi bi-building me-2" style={{ color: "#6f42c1" }}></i>
-                System Installer (Specialist Electrical Company)
-            </h2>
-            <hr />
-
-            <div className="row g-3">
-                <div className="col-md-12">
-                    <label className="form-label">Company</label>
-                    <input
-                        name="company"
-                        className="form-control"
-                        onChange={(e) => handleChange(e, 'installer')}
-                    />
+                <div className="mt-4">
+                    {status.error && <div className="alert alert-danger">{status.error}</div>}
+                    {status.success && <div className="alert alert-success">{status.success}</div>}
                 </div>
-                <div className="col-md-6">
-                    <label className="form-label">Place</label>
-                    <input
-                        name="place"
-                        className="form-control"
-                        onChange={(e) => handleChange(e, 'installer')}
-                    />
-                </div>
-                <div className="col-md-6">
-                    <label className="form-label">Registration Number with Network Operator</label>
-                    <input
-                        name="registrationNumber"
-                        className="form-control"
-                        onChange={(e) => handleChange(e, 'installer')}
-                    />
-                </div>
-            </div>
+            </form>
 
-            <hr className="my-4" />
-
-            {/* System Info */}
-            <h2 className="mb-3">System Info</h2>
-            <div className="row g-3 mb-3">
-                <div className="col-md-6">
-                    <label className="form-label">System Type</label>
-                    <select name="systemType" className="form-select" onChange={handleChange}>
-                        <option value="">Select Type</option>
-                        <option value="New construction">New construction</option>
-                        <option value="Extension">Extension</option>
-                        <option value="Dismantling">Dismantling</option>
-                    </select>
-                </div>
-                <div className="col-md-6">
-                    <label className="form-label">Planned Commission Date</label>
-                    <input type="date" name="plannedCommission" className="form-control" onChange={handleChange} />
-                </div>
-            </div>
-
-            <hr className="my-4" />
-
-            {/* Attachments */}
-            <h2 className="mb-3 mt-5">Attachments</h2>
-            {[
-                { label: 'Application Form Enclosed', name: 'applicationFormEnclosed' },
-                { label: 'Site Plan Attached', name: 'sitePlanAttached' },
-                { label: 'Data Sheet Attached', name: 'dataSheetAttached' },
-                { label: 'Unit Certificates Available', name: 'unitCertificatesAvailable' },
-                { label: 'NA Protection Certificate Enclosed', name: 'naProtectionCertificateEnclosed' },
-                { label: 'Certificate for Power Flow Monitoring', name: 'powerFlowMonitoringCert' },
-                { label: 'Overview Circuit Diagram Attached', name: 'overviewCircuitDiagramAttached' }
-            ].map((checkbox, idx) => (
-                <div key={idx} className="form-check mb-2">
-                    <input
-                        type="checkbox"
-                        className="form-check-input"
-                        name={checkbox.name}
-                        onChange={(e) => handleChange(e, 'attachments')}
-                    />
-                    <label className="form-check-label">{checkbox.label}</label>
-                </div>
-            ))}
-
-            <hr className="my-4" />
-
-            {/* Place / Date / Signature */}
-            <h2 className="mb-3 mt-5">Place / Date / Signature</h2>
-            <div className="row g-3 mb-3">
-                <div className="col-md-4">
-                    <label className="form-label">Place</label>
-                    <input name="place" className="form-control" onChange={handleChange} />
-                </div>
-                <div className="col-md-4">
-                    <label className="form-label">Date</label>
-                    <input type="date" name="signatureDate" className="form-control" onChange={handleChange} />
-                </div>
-                <div className="col-md-4">
-                    <label className="form-label">Signature</label>
-                    <input name="signature" className="form-control" onChange={handleChange} />
-                </div>
-            </div>
-
-            <button type="submit" className="btn btn-primary mt-3">Submit Application</button>
-        </form>
+            <ApplicationsList onEdit={startEditing} />
+        </>
     );
 }
 

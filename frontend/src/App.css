@@ -1,0 +1,52 @@
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+
+html, body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#root {
+    width: 100%;
+    max-width: 960px;
+}
+
+.paper-form {
+    background: white;
+    padding: 2rem 2rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+
+.paper-form h2 {
+    font-family: Georgia, serif;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.paper-form hr {
+    border-top: 1px solid #ccc;
+    margin: 2rem 0;
+}
+
+.paper-form .form-label {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.paper-form .form-check-label {
+    font-size: 0.9rem;
+}
+
+@media screen and (min-width: 1024px) {
+    .container {
+        max-width: 850px;
+    }
+}
+
