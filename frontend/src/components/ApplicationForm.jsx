@@ -148,10 +148,46 @@ function ApplicationForm() {
             systemType: app.systemType || '',
             plannedCommission: app.plannedCommission ? app.plannedCommission.split('T')[0] : '',
             attachments: app.attachments || EMPTY_FORM.attachments,
-            subscriber: { ...EMPTY_FORM.subscriber, ...app.subscriber },
-            operator: { ...EMPTY_FORM.operator, ...app.operator },
-            plantAddress: { ...EMPTY_FORM.plantAddress, ...app.plantAddress },
-            installer: { ...EMPTY_FORM.installer, ...app.installer },
+
+            subscriber: {
+                firstName: app.subscriber?.firstName || '',
+                lastName: app.subscriber?.lastName || '',
+                street: app.subscriber?.street || '',
+                houseNumber: app.subscriber?.houseNumber || '',
+                zip: app.subscriber?.zip || '',
+                city: app.subscriber?.city || '',
+                phone: app.subscriber?.phone || '',
+                email: app.subscriber?.email || ''
+            },
+
+            operator: {
+                firstName: app.operator?.firstName || '',
+                lastName: app.operator?.lastName || '',
+                street: app.operator?.street || '',
+                houseNumber: app.operator?.houseNumber || '',
+                zip: app.operator?.zip || '',
+                city: app.operator?.city || '',
+                phone: app.operator?.phone || '',
+                email: app.operator?.email || ''
+            },
+
+            plantAddress: {
+                firstName: app.plantAddress?.firstName || '',
+                lastName: app.plantAddress?.lastName || '',
+                street: app.plantAddress?.street || '',
+                houseNumber: app.plantAddress?.houseNumber || '',
+                zip: app.plantAddress?.zip || '',
+                city: app.plantAddress?.city || '',
+                phone: app.plantAddress?.phone || '',
+                email: app.plantAddress?.email || ''
+            },
+
+            installer: {
+                company: app.installer?.company || '',
+                place: app.installer?.place || '',
+                registrationNumber: app.installer?.registrationNumber || ''
+            },
+
             place: app.place || '',
             signatureDate: app.signatureDate ? app.signatureDate.split('T')[0] : '',
             signature: app.signature || '',
@@ -159,6 +195,7 @@ function ApplicationForm() {
         });
         setEditingId(app.id);
     };
+
 
     return (
         <>

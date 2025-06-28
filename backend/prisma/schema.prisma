@@ -53,6 +53,12 @@ model Application {
   dataSheetAttached    Boolean  @default(false)
   certificatesAttached Boolean  @default(false)
 
+  place         String?
+  signatureDate DateTime?
+  signature     String?
+
+  attachments Json?
+
   subscriberId   Int
   operatorId     Int
   installerId    Int

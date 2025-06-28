@@ -37,38 +37,77 @@ router.post('/', async (req, res) => {
 
 // PUT an application by ID
 router.put('/:id', async (req, res) => {
-    const id = parseInt(req.params.id);
+    const { id } = req.params;
     const data = req.body;
 
     try {
-        const existingApp = await prisma.application.findUnique({ where: { id } });
-        if (!existingApp) {
-            return res.status(404).json({ error: 'Application not found' });
-        }
-
-        const updatedApp = await prisma.application.update({
-            where: { id },
+        const updated = await prisma.application.update({
+            where: { id: parseInt(id) },
             data: {
                 systemType: data.systemType,
                 plannedCommission: new Date(data.plannedCommission),
-                sitePlanAttached: data.sitePlanAttached,
-                dataSheetAttached: data.dataSheetAttached,
-                certificatesAttached: data.certificatesAttached
-            },
-            include: {
-                subscriber: true,
-                operator: true,
-                installer: true,
-                plantAddress: true
+                sitePlanAttached: data.attachments.sitePlanAttached,
+                dataSheetAttached: data.attachments.dataSheetAttached,
+                certificatesAttached: data.attachments.certificatesAttached,
+
+                place: data.place,
+                signatureDate: data.signatureDate ? new Date(data.signatureDate) : null,
+                signature: data.signature,
+
+                attachments: data.attachments,
+
+                subscriber: {
+                    update: {
+                        firstName: data.subscriber.firstName,
+                        lastName: data.subscriber.lastName,
+                        street: data.subscriber.street,
+                        houseNumber: data.subscriber.houseNumber,
+                        zip: data.subscriber.zip,
+                        city: data.subscriber.city,
+                        phone: data.subscriber.phone,
+                        email: data.subscriber.email,
+                    }
+                },
+                operator: {
+                    update: {
+                        firstName: data.operator.firstName,
+                        lastName: data.operator.lastName,
+                        street: data.operator.street,
+                        houseNumber: data.operator.houseNumber,
+                        zip: data.operator.zip,
+                        city: data.operator.city,
+                        phone: data.operator.phone,
+                        email: data.operator.email,
+                    }
+                },
+                plantAddress: {
+                    update: {
+                        firstName: data.plantAddress.firstName,
+                        lastName: data.plantAddress.lastName,
+                        street: data.plantAddress.street,
+                        houseNumber: data.plantAddress.houseNumber,
+                        zip: data.plantAddress.zip,
+                        city: data.plantAddress.city,
+                        phone: data.plantAddress.phone,
+                        email: data.plantAddress.email,
+                    }
+                },
+                installer: {
+                    update: {
+                        company: data.installer.company,
+                        place: data.installer.place,
+                        registrationNumber: data.installer.registrationNumber,
+                    }
+                }
             }
         });
-
-        res.json(updatedApp);
+        res.json(updated);
     } catch (err) {
-        console.error('🔥 Error updating application:', err);
-        res.status(500).json({ error: 'Could not update application' });
+        console.error(err);
+        res.status(500).json({ error: 'Update failed.' });
     }
 });
+
 
 
 // GET all applications
